@@ -1,127 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Savings</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
-    /* Farben */
-    --sage:#8FA98F;            /* Van-Karosserie (sage green) */
-    --stroke:#e6e6e6;          /* Linien im Dark-UI */
-    --glass:#9aa6ad;           /* Fenster */
-    --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
-    --text:#f2f2f2; --muted:#c8c8c8;
-    /* Geometrie der Füllung (muss zum Clip passen) */
-    --fillX:64;   /* Start X der Ladefläche */
-    --fillY:86;   /* Start Y */
-    --fillW:452;  /* Breite der Ladefläche */
-    --fillH:122;  /* Höhe  der Ladefläche */
+    --sage:#8fa98f;        /* Van-Farbe */
+    --line:#e6e6e6;        /* Konturen im Dark UI */
+    --glass:#a7b3bb;       /* Fenster */
+    --text:#f2f2f2; --muted:#bfc7cc;
   }
-  body{
-    margin:0; padding:10px; background:transparent;
-    font-family:Inter,Arial,sans-serif; color:var(--text); text-align:center;
-  }
-  h2{margin:0 0 8px 0; font-weight:600}
-  .wrap{width:640px; max-width:100%; margin:0 auto}
-  svg{display:block; width:100%; height:auto}
-  input{
-    margin-top:8px; padding:.5rem .7rem; width:220px; text-align:right;
-    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.2);
-    color:var(--text); border-radius:6px; outline:none; font-size:1rem;
-  }
-  .info{margin-top:6px; color:var(--muted); font-size:.95rem}
+  body{margin:0;padding:10px;background:transparent;
+       font-family:Inter,Arial,sans-serif;color:var(--text);text-align:center}
+  .wrap{width:680px;max-width:100%;margin:0 auto}
+  svg{display:block;width:100%;height:auto}
+  input{margin-top:8px;padding:.5rem .7rem;width:220px;text-align:right;
+        background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);
+        color:var(--text);border-radius:6px;outline:none;font-size:1rem}
+  .info{margin-top:6px;color:var(--muted);font-size:.95rem}
 </style>
 </head>
 <body>
   <h2>Savings</h2>
-
   <div class="wrap">
-    <!-- Reines SVG: Van + Füllung -->
-    <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings progress">
+    <!-- Realistischere Crafter-Silhouette (links fahrend) -->
+    <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings">
       <defs>
-        <!-- Silhouette des Vans (Crafter-ähnlich, nach links) als Pfad:
-             lange Ladefläche, hohes Dach (H3), keilige Front, Radkästen -->
-        <path id="vanShape" d="
-          M 64 90
-          L 360 90
-          C 372 80, 386 75, 410 75
-          L 486 75
-          C 498 75, 510 82, 517 92
-          L 538 123
-          C 542 129, 548 132, 555 132
-          L 566 132
-          L 566 166
-          L 555 166
-          C 548 166, 542 169, 538 175
-          L 528 190
-          C 524 196, 518 200, 510 200
-          L 470 200
-          C 467 200, 465 201, 463 203
-          C 456 210, 448 216, 440 216
-          L 408 216
-          C 395 216, 386 210, 380 201
-          C 378 198, 376 197, 372 197
-          L 160 197
-          C 156 197, 154 198, 152 201
-          C 145 210, 136 216, 124 216
-          L 96 216
-          C 84 216, 75 211, 68 202
-          C 66 199, 64 198, 60 198
-          L 48 198
-          L 48 170
-          L 60 170
-          C 66 170, 70 169, 74 165
-          C 83 156, 99 150, 120 150
-          L 190 150
-          C 202 150, 210 142, 210 132
-          L 210 120
-          C 210 103, 224 90, 240 90
+        <!-- Vanform: langer Kasten, Hochdach (H3), keilige Front, Radkästen -->
+        <path id="van" d="
+          M 70 95
+          L 430 95
+          L 452 84
+          L 520 84
+          Q 538 84 549 98
+          L 570 124
+          Q 574 130 582 131
+          L 598 132
+          L 598 168
+          L 582 168
+          Q 574 169 570 175
+          L 556 195
+          Q 552 200 542 200
+          L 505 200
+          Q 500 200 496 204
+          Q 485 214 470 214
+          L 438 214
+          Q 422 214 411 202
+          Q 408 199 404 199
+          L 210 199
+          Q 206 199 203 202
+          Q 192 214 176 214
+          L 144 214
+          Q 129 214 118 204
+          Q 114 200 108 200
+          L 82 200
+          L 70 185
+          L 70 165
+          L 86 165
+          Q 96 165 104 159
+          Q 122 146 154 146
+          L 208 146
+          Q 222 146 222 132
+          L 222 118
+          Q 222 95 245 95
           Z" />
-
-        <!-- Clip für die Füllung: innen flächig, ohne Reifen/Frontausbuchtungen -->
-        <clipPath id="vanClip">
-          <use href="#vanShape"/>
-        </clipPath>
+        <!-- Clipbereich für die Füllung: exakt die Vanform -->
+        <clipPath id="clipVan"><use href="#van"/></clipPath>
       </defs>
 
-      <!-- Füllbalken (wird per JS in der Breite verändert), sitzt unter der Karosserie -->
-      <rect id="meter" x="64" y="86" width="0" height="122" fill="#2ecc71" clip-path="url(#vanClip)"/>
+      <!-- Füllung (unter der Karosse, wird in der Breite geändert) -->
+      <rect id="meter" x="70" y="86" width="0" height="128" fill="#2ecc71" clip-path="url(#clipVan)"/>
 
-      <!-- Karosserie (sage green) -->
-      <use href="#vanShape" fill="var(--sage)" />
+      <!-- Karosse -->
+      <use href="#van" fill="var(--sage)"/>
+      <use href="#van" fill="none" stroke="var(--line)" stroke-width="3"/>
 
-      <!-- Außenkontur -->
-      <use href="#vanShape" fill="none" stroke="var(--stroke)" stroke-width="3"/>
+      <!-- Fenster / A-Säule -->
+      <path d="M 520 96 L 470 96 L 452 114 L 520 114 Z" fill="var(--glass)" stroke="var(--line)" stroke-width="2"/>
 
-      <!-- Fenster (vereinfachte Crafter-Form) -->
-      <path d="M 450 90 L 410 90 L 392 108 L 450 108 Z" fill="var(--glass)" stroke="var(--stroke)" stroke-width="2"/>
+      <!-- Paneellinien -->
+      <line x1="96" y1="138" x2="410" y2="138" stroke="var(--line)" stroke-width="1" opacity=".35"/>
+      <line x1="100" y1="162" x2="360" y2="162" stroke="var(--line)" stroke-width="1" opacity=".28"/>
+      <!-- Heckfuge -->
+      <line x1="500" y1="104" x2="500" y2="192" stroke="var(--line)" stroke-width="1" opacity=".35"/>
 
-      <!-- Zier-/Schiebetür-Linien -->
-      <line x1="92" y1="138" x2="350" y2="138" stroke="var(--stroke)" stroke-width="1" opacity="0.35"/>
-      <line x1="96" y1="162" x2="330" y2="162" stroke="var(--stroke)" stroke-width="1" opacity="0.28"/>
-
-      <!-- Radkästen / Räder -->
+      <!-- Räder -->
       <g>
-        <circle cx="136" cy="216" r="26" fill="var(--stroke)"/>
-        <circle cx="136" cy="216" r="11" fill="#888"/>
-        <circle cx="424" cy="216" r="26" fill="var(--stroke)"/>
-        <circle cx="424" cy="216" r="11" fill="#888"/>
+        <circle cx="172" cy="214" r="26" fill="var(--line)"/>
+        <circle cx="172" cy="214" r="11" fill="#888"/>
+        <circle cx="456" cy="214" r="26" fill="var(--line)"/>
+        <circle cx="456" cy="214" r="11" fill="#888"/>
       </g>
 
       <!-- Marke „van paid“ bei 50k/60k -->
-      <line id="paidTick" x1="0" y1="80" x2="0" y2="226" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
-      <text id="paidLabel" x="0" y="76" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
+      <line id="paidTick" x1="0" y1="86" x2="0" y2="226" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
+      <text id="paidLabel" x="0" y="80" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
     </svg>
 
-    <input type="number" id="savings" placeholder="Savings (€)" />
+    <input type="number" id="savings" placeholder="Savings (€)"/>
     <div class="info" id="info">0% — 0€ of 60,000€</div>
   </div>
 
 <script>
-  // ---- Config ----
-  const goal=60000, paidAt=50000;
-  const fillX=64, fillW=452;  // muss zu CSS-Variablen/Rect passen
+  // --- Config ---
+  const goal = 60000;     // Gesamtziel
+  const paidAt = 50000;   // Marke "van paid"
+  const fillX = 70;       // Start der Füllung (muss zu rect x passen)
+  const fillW = 510;      // maximale Breite der Füllung (ungef. Länge des Vans)
 
   const meter = document.getElementById('meter');
   const info  = document.getElementById('info');
@@ -134,7 +120,7 @@
     if (p < 0.75) return '#f1c40f';
     return '#2ecc71';
   }
-  function placePaidMarker(){
+  function placePaid(){
     const px = fillX + fillW * (paidAt/goal);
     paidTk.setAttribute('x1', px); paidTk.setAttribute('x2', px);
     paidLb.setAttribute('x', px);
@@ -147,10 +133,10 @@
     localStorage.setItem('van_savings', amount);
   }
 
-  placePaidMarker();
-  input.addEventListener('input', e => update(Number(e.target.value || 0)));
+  placePaid();
   const saved = Number(localStorage.getItem('van_savings') || 0);
   input.value = saved || '';
+  input.addEventListener('input', e => update(Number(e.target.value || 0)));
   update(saved);
 </script>
 </body>
