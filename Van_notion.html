@@ -3,29 +3,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Van Savings</title>
 <style>
-  :root{ --bg:transparent; --text:#eaecef; --muted:#aeb6bc; --green:#7aa35f; }
+  :root{
+    --bg: transparent; --text:#eaecef; --muted:#aeb6bc; --green:#7aa35f;
+    /* Feinjustierbare Silhouetten-Ränder (in % der Gesamtbreite) */
+    --L: 12%;  /* linker Rand, ab wo der Van wirklich beginnt */
+    --R: 88%;  /* rechter Rand, wo der Van endet */
+    --stop: var(--L); /* wird per JS gesetzt */
+  }
   html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui}
   .wrap{max-width:900px;margin:0 auto;padding:10px}
   .stage{position:relative;width:100%;aspect-ratio:16/6}
 
-  /* Basisbild */
   .van-base{
     position:absolute; inset:0;
     background:url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png") center/contain no-repeat;
     pointer-events:none;
   }
-
-  /* Füllung: voller Frame, Sichtbarkeit NUR innerhalb der Van-Silhouette via Maske */
+  /* Vollflächiger Layer; sichtbar NUR innerhalb der Van-Silhouette; 
+     Grün nur zwischen --L und --stop */
   .van-fill{
     position:absolute; inset:0;
-    /* Gradient wird per JS auf deinen % gesetzt */
-    --pct: 0%;
     background:
       linear-gradient(to right,
-        var(--green) 0%,
-        var(--green) var(--pct),
-        rgba(0,0,0,0) var(--pct),
-        rgba(0,0,0,0) 100%
+        transparent 0%,
+        transparent var(--L),
+        var(--green) var(--L),
+        var(--green) var(--stop),
+        transparent var(--stop),
+        transparent 100%
       );
     -webkit-mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
             mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
@@ -66,25 +71,32 @@
   const pct  = document.getElementById('pct');
   const amt  = document.getElementById('amt');
 
-  const fmt = n => n.toLocaleString('de-DE')+'€';
+  // Prozent-Utility
+  const toPct = v => v.toFixed(3) + '%';
+  const fmt   = n => n.toLocaleString('de-DE') + '€';
   const clamp = (x,min,max)=>Math.max(min,Math.min(max,x));
+
+  // Lies die in CSS gesetzten Ränder (--L/--R) als Prozentwerte (z.B. "12%")
+  const Lpct = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--L')) || 12;
+  const Rpct = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--R')) || 88;
+  const span = Rpct - Lpct; // nutzbare Breite der Silhouette
 
   function render(amount){
     const a = clamp(Number(amount||0), 0, GOAL);
-    const p = GOAL ? a/GOAL : 0;
-    const perc = (p*100).toFixed(1) + '%';
-    fill.style.setProperty('--pct', perc);                 // << nur den Gradient-Knick verschieben
+    const p = GOAL ? a/GOAL : 0;              // 0..1
+    const stop = Lpct + span * p;             // echte Füllposition innerhalb [L..R]
+    fill.style.setProperty('--stop', toPct(stop));
     pct.textContent = (p*100).toFixed(1)+'%';
     amt.textContent = `${fmt(a)} von ${fmt(GOAL)}`;
-    try { localStorage.setItem('van_amount', a); } catch(e){}
+    try{ localStorage.setItem('van_amount', a); }catch(e){}
     const hash = `#amount=${a}&goal=${GOAL}`;
     if (location.hash !== hash) history.replaceState(null,'',hash);
   }
 
+  // Start: URL-Hash > localStorage > 0
   const hs = new URLSearchParams((location.hash||'').slice(1));
   const a0 = Number(hs.get('amount')) || Number(localStorage.getItem('van_amount')) || 0;
-  num.value = a0;
-  render(a0);
+  num.value = a0; render(a0);
 
   num.addEventListener('input', ()=> render(num.value));
 })();
