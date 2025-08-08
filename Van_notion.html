@@ -1,70 +1,86 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Van savings</title>
-<style>
-  :root{ --text:#eaecef; --muted:#aeb6bc }
-  body{ margin:0; background:transparent; color:var(--text); font:15px/1.4 system-ui; padding:8px }
-  .wrap{ max-width:900px; margin:0 auto }
-  /* Bühne mit festem Seitenverhältnis – passt zu den meisten Seitenansichten */
-  .stage{ position:relative; aspect-ratio: 16/6; }
-  .van{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
-  /* ====== HIER sitzt die Füll-Leiste im Kasten des Vans ======
-     Passe left/top/width/height in % an dein Foto an. */
-  .tank{ position:absolute; left:18%; top:38%; width:60%; height:24%;
-         background:rgba(255,255,255,.08); border-radius:12px; overflow:hidden }
-  .fill{ height:100%; width:0; background:#2ecc71; transition:width .25s }
-  .meta{ margin:6px 2px 10px; display:flex; justify-content:space-between; color:var(--muted); font-size:13px }
-  .row{ display:flex; gap:8px; align-items:center; justify-content:center }
-  input[type=number]{ width:180px; padding:.5rem .6rem; border-radius:8px;
-    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); color:#fff; text-align:right }
-  /* Debug-Rahmen zum Ausrichten – bei Bedarf einkommentieren */
-  /* .stage *{ outline:1px dashed rgba(255,255,255,.15) } */
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Van Savings Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #1a1a1a;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
 
-<div class="wrap">
-  <div class="stage">
-    <!-- DEIN VAN-BILD: Pfad anpassen! -->
-    <img class="van" alt="van" src="img/crafter-side.png">
-    <div class="tank"><div class="fill" id="fill"></div></div>
+    .container {
+      position: relative;
+      width: 600px;
+      max-width: 90vw;
+    }
+
+    .van-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .van-img {
+      width: 100%;
+      display: block;
+    }
+
+    .progress-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 100%;
+      background-color: rgba(112, 150, 100, 0.6);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .input-section {
+      margin-top: 20px;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      width: 150px;
+      font-size: 1rem;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="van-wrapper" id="vanWrapper">
+      <img src="https://kursuthewookie.github.io/Van-finance/img/crafter-side.png" alt="Van" class="van-img" />
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="input-section">
+      <div class="label">Enter saved amount (€):</div>
+      <input type="number" id="savingsInput" placeholder="e.g. 13500" />
+    </div>
   </div>
 
-  <div class="meta"><span id="pct">0%</span><span id="amt">0€ von 60 000€</span></div>
+  <script>
+    const savingsInput = document.getElementById('savingsInput');
+    const progressFill = document.getElementById('progressFill');
 
-  <div class="row">
-    <label>Ersparnis (€):</label>
-    <input type="number" id="num" step="100" min="0" value="0">
-    <label>Ziel (€):</label>
-    <input type="number" id="goal" step="500" min="1000" value="60000">
-  </div>
-</div>
+    const goal = 50000;
 
-<script>
-(function(){
-  const fill=document.getElementById('fill'),
-        pct =document.getElementById('pct'),
-        amt =document.getElementById('amt'),
-        num =document.getElementById('num'),
-        goal=document.getElementById('goal');
-
-  const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
-  const color=p=>p<.25?'#e74c3c':p<.75?'#f1c40f':'#2ecc71';
-  const fmt=n=>n.toLocaleString('de-DE')+'€';
-
-  function render(a,g){
-    a=clamp(a,0,g); const p=a/g;
-    fill.style.width=(p*100)+'%'; fill.style.background=color(p);
-    pct.textContent=(p*100).toFixed(1)+'%';
-    amt.textContent=`${fmt(a)} von ${fmt(g)}`;
-    localStorage.setItem('van_amount',a);
-    localStorage.setItem('van_goal',g);
-  }
-
-  // Start: URL-Hash > localStorage > 30% vom Ziel
-  const hs=new URLSearchParams((location.hash||'').slice(1));
-  const g0=Number(hs.get('goal'))||Number(localStorage.getItem('van_goal'))||60000;
-  const a0=Number(hs.get('amount'))||Number(localStorage.getItem('van_amount'))||Math.round(g0*0.30);
-  num.value=a0; goal.value=g0; render(a0,g0);
-
-  num.addEventListener('input',()=>render(Number(num.value||0),Number(goal.value||g0)));
-  goal.addEventListener('input',()=>render(Number(num.value||0),Number(goal.value||g0)));
-})();
-</script>
+    savingsInput.addEventListener('input', () => {
+      const saved = parseFloat(savingsInput.value) || 0;
+      const percent = Math.min(saved / goal, 1);
+      progressFill.style.width = (percent * 100) + '%';
+    });
+  </script>
+</body>
+</html>
