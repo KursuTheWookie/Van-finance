@@ -1,0 +1,85 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Van Savings V4 LEFT</title>
+<style>
+  :root{--sage:#8fa98f; --line:#e6e6e6; --glass:#a7b3bb; --text:#f2f2f2; --muted:#bfc7cc}
+  body{margin:0;padding:10px;background:transparent;color:var(--text);font:15px/1.4 system-ui;text-align:center}
+  .wrap{max-width:760px;margin:0 auto}
+  svg{display:block;width:100%;height:auto}
+  input{margin-top:10px;padding:.55rem .7rem;width:240px;text-align:right;background:rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.2);color:var(--text);border-radius:6px}
+  .info{margin-top:6px;color:var(--muted)}
+  h2{margin:.2rem 0 .6rem;font-weight:700}
+</style>
+
+<h2>V4 LEFT — Savings</h2>
+<div class="wrap">
+  <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings">
+    <defs>
+      <!-- Körper: langer Kasten mit Rundungen -->
+      <rect id="body" x="150" y="90" width="520" height="120" rx="22" ry="22"/>
+      <!-- Kabine/Nase links -->
+      <polygon id="cab" points="150,90 110,108 100,130 100,180 110,202 150,210"/>
+      <!-- Clip: Union aus body + cab -->
+      <clipPath id="clipVan">
+        <use href="#body"/><use href="#cab"/>
+      </clipPath>
+    </defs>
+
+    <!-- Füllung: wächst in der Breite; liegt unter Karosserie -->
+    <rect id="meter" x="100" y="86" width="0" height="128" fill="#2ecc71" clip-path="url(#clipVan)"/>
+
+    <!-- Karosserie -->
+    <use href="#body" fill="var(--sage)"/><use href="#cab" fill="var(--sage)"/>
+    <use href="#body" fill="none" stroke="var(--line)" stroke-width="3"/>
+    <use href="#cab"  fill="none" stroke="var(--line)" stroke-width="3"/>
+
+    <!-- Fenster links -->
+    <polygon points="144,104 118,116 118,164 144,176" fill="var(--glass)" stroke="var(--line)" stroke-width="2"/>
+
+    <!-- Räder -->
+    <g>
+      <circle cx="240" cy="210" r="26" fill="var(--line)"/><circle cx="240" cy="210" r="11" fill="#888"/>
+      <circle cx="540" cy="210" r="26" fill="var(--line)"/><circle cx="540" cy="210" r="11" fill="#888"/>
+    </g>
+
+    <!-- „van paid“ Marke (bei 50k/60k) -->
+    <line id="paidTick" x1="0" y1="86" x2="0" y2="226" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
+    <text id="paidLabel" x="0" y="78" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
+  </svg>
+
+  <input type="number" id="savings" placeholder="Savings (€)"/>
+  <div class="info" id="info">0% — 0€ of 60,000€</div>
+</div>
+
+<script>
+  // --- Konfig ---
+  const goal=60000, paidAt=50000;
+  // Füllgeometrie passend zum Clip: Start bei x=100, maxBreite ≈ 570 (bis hinteres Ende)
+  const fillX=100, fillW=570;
+
+  const meter=document.getElementById('meter');
+  const info =document.getElementById('info');
+  const input=document.getElementById('savings');
+  const paidTk=document.getElementById('paidTick');
+  const paidLb=document.getElementById('paidLabel');
+
+  function colorFor(p){ return p<.25?'#e74c3c':p<.75?'#f1c40f':'#2ecc71'; }
+  function placePaid(){
+    const px = fillX + fillW * (paidAt/goal);
+    paidTk.setAttribute('x1',px); paidTk.setAttribute('x2',px);
+    paidLb.setAttribute('x',px);
+  }
+  function update(amount){
+    const a = isFinite(amount)?Math.max(0,Math.min(amount,goal)):0;
+    const p = a/goal;
+    meter.setAttribute('width', fillW*p);
+    meter.setAttribute('fill', colorFor(p));
+    info.textContent = `${(p*100).toFixed(1)}% — ${a.toLocaleString()}€ of ${goal.toLocaleString()}€`;
+    localStorage.setItem('van_savings', a);
+  }
+  placePaid();
+  const saved=Number(localStorage.getItem('van_savings')||0);
+  input.value=saved||'';
+  update(saved);
+  input.addEventListener('input', e=>update(Number(e.target.value)));
+</script>
