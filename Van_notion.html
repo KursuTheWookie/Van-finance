@@ -3,34 +3,35 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Van Savings</title>
 <style>
-  :root{
-    --bg: transparent;
-    --text: #eaecef;
-    --muted: #aeb6bc;
-    --green: #7aa35f; /* Sage-Grün */
-  }
+  :root{ --bg:transparent; --text:#eaecef; --muted:#aeb6bc; --green:#7aa35f; }
   html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui}
   .wrap{max-width:900px;margin:0 auto;padding:10px}
   .stage{position:relative;width:100%;aspect-ratio:16/6}
 
-  /* Basisbild: normaler (nicht-grüner) Van */
+  /* Basisbild */
   .van-base{
     position:absolute; inset:0;
     background:url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png") center/contain no-repeat;
     pointer-events:none;
   }
 
-  /* Overlay, das NUR in der Van-Silhouette sichtbar ist und links->rechts wächst */
+  /* Füllung: voller Frame, Sichtbarkeit NUR innerhalb der Van-Silhouette via Maske */
   .van-fill{
-    position:absolute; inset:0; width:0%;
-    background:var(--green);
-    /* Silhouetten-Maske (zeigt nur Van-Pixel) */
+    position:absolute; inset:0;
+    /* Gradient wird per JS auf deinen % gesetzt */
+    --pct: 0%;
+    background:
+      linear-gradient(to right,
+        var(--green) 0%,
+        var(--green) var(--pct),
+        rgba(0,0,0,0) var(--pct),
+        rgba(0,0,0,0) 100%
+      );
     -webkit-mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
             mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
-    -webkit-mask-repeat: no-repeat;       mask-repeat: no-repeat;
-    -webkit-mask-position: center;        mask-position: center;
-    -webkit-mask-size: contain;           mask-size: contain;
-    transition: width .25s ease;
+    -webkit-mask-repeat:no-repeat;         mask-repeat:no-repeat;
+    -webkit-mask-position:center;          mask-position:center;
+    -webkit-mask-size:contain;             mask-size:contain;
     pointer-events:none;
   }
 
@@ -39,7 +40,6 @@
   input[type=number]{width:180px;padding:.5rem .6rem;border-radius:8px;
     border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);
     color:var(--text);text-align:right}
-  label{opacity:.9}
 </style>
 
 <div class="wrap">
@@ -49,8 +49,7 @@
   </div>
 
   <div class="meta">
-    <span id="pct">0%</span>
-    <span id="amt">0€ von 50 000€</span>
+    <span id="pct">0%</span><span id="amt">0€ von 50 000€</span>
   </div>
 
   <div class="row">
@@ -61,30 +60,27 @@
 
 <script>
 (function(){
-  const GOAL = 50000; // fixes Sparziel
+  const GOAL = 50000;
   const num  = document.getElementById('num');
   const fill = document.getElementById('fill');
   const pct  = document.getElementById('pct');
   const amt  = document.getElementById('amt');
 
-  const fmt = n => n.toLocaleString('de-DE') + '€';
+  const fmt = n => n.toLocaleString('de-DE')+'€';
   const clamp = (x,min,max)=>Math.max(min,Math.min(max,x));
 
   function render(amount){
     const a = clamp(Number(amount||0), 0, GOAL);
     const p = GOAL ? a/GOAL : 0;
-    fill.style.width = (p*100) + '%';
-    pct.textContent  = (p*100).toFixed(1) + '%';
-    amt.textContent  = `${fmt(a)} von ${fmt(GOAL)}`;
-    try {
-      localStorage.setItem('van_amount', a);
-    } catch(e){}
-    // auch in URL schreiben, damit Notion-Embeds Wert behalten
+    const perc = (p*100).toFixed(1) + '%';
+    fill.style.setProperty('--pct', perc);                 // << nur den Gradient-Knick verschieben
+    pct.textContent = (p*100).toFixed(1)+'%';
+    amt.textContent = `${fmt(a)} von ${fmt(GOAL)}`;
+    try { localStorage.setItem('van_amount', a); } catch(e){}
     const hash = `#amount=${a}&goal=${GOAL}`;
     if (location.hash !== hash) history.replaceState(null,'',hash);
   }
 
-  // Startwerte: URL-Hash > localStorage > 0
   const hs = new URLSearchParams((location.hash||'').slice(1));
   const a0 = Number(hs.get('amount')) || Number(localStorage.getItem('van_amount')) || 0;
   num.value = a0;
