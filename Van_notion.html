@@ -3,81 +3,93 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Van Savings</title>
 <style>
-  :root{ --bg:transparent; --text:#eaecef; --muted:#aeb6bc; --green:#7aa35f; }
-  body{ margin:0; background:var(--bg); color:var(--text); font:15px/1.4 system-ui; padding:10px }
-  .wrap{ max-width:820px; margin:0 auto }
-  .stage{ position:relative; width:100%; aspect-ratio: 16/6; }
+  :root{
+    --bg: transparent;
+    --text: #eaecef;
+    --muted: #aeb6bc;
+    --green: #7aa35f; /* Sage-Grün */
+  }
+  html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui}
+  .wrap{max-width:900px;margin:0 auto;padding:10px}
+  .stage{position:relative;width:100%;aspect-ratio:16/6}
 
-  /* Van als sichtbares Bild */
-  .van-img{
+  /* Basisbild: normaler (nicht-grüner) Van */
+  .van-base{
     position:absolute; inset:0;
     background:url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png") center/contain no-repeat;
     pointer-events:none;
   }
 
-  /* Füllung, die NUR innerhalb der Van-Silhouette sichtbar ist (Maske) */
-  .fill{
-    position:absolute; inset:0; width:0%; background:var(--green);
-    /* Maskierung mit deinem PNG (alpha-Kanal) */
+  /* Overlay, das NUR in der Van-Silhouette sichtbar ist und links->rechts wächst */
+  .van-fill{
+    position:absolute; inset:0; width:0%;
+    background:var(--green);
+    /* Silhouetten-Maske (zeigt nur Van-Pixel) */
     -webkit-mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
-    mask-image:         url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
-    -webkit-mask-repeat:no-repeat;         mask-repeat:no-repeat;
-    -webkit-mask-position:center;          mask-position:center;
-    -webkit-mask-size:contain;             mask-size:contain;
-    transition:width .25s ease;
+            mask-image: url("https://kursuthewookie.github.io/Van-finance/img/crafter-side.png");
+    -webkit-mask-repeat: no-repeat;       mask-repeat: no-repeat;
+    -webkit-mask-position: center;        mask-position: center;
+    -webkit-mask-size: contain;           mask-size: contain;
+    transition: width .25s ease;
+    pointer-events:none;
   }
 
-  .meta{ display:flex; gap:12px; justify-content:center; align-items:center; margin:8px 0 6px; color:var(--muted) }
-  .row{ display:flex; gap:10px; justify-content:center; align-items:center; margin:.2rem 0 .6rem }
-  input[type=number]{ width:160px; padding:.5rem .6rem; border-radius:8px; border:1px solid rgba(255,255,255,.18);
-    background:rgba(255,255,255,.06); color:var(--text); text-align:right }
-  label{opacity:.85}
+  .meta{display:flex;gap:12px;justify-content:center;align-items:center;margin:8px 0 6px;color:var(--muted)}
+  .row{display:flex;gap:10px;justify-content:center;align-items:center;margin:.3rem 0 .6rem}
+  input[type=number]{width:180px;padding:.5rem .6rem;border-radius:8px;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);
+    color:var(--text);text-align:right}
+  label{opacity:.9}
 </style>
 
 <div class="wrap">
   <div class="stage">
-    <div class="fill" id="fill"></div>
-    <div class="van-img"></div>
+    <div class="van-base"></div>
+    <div class="van-fill" id="fill"></div>
   </div>
 
-  <div class="meta"><span id="pct">0%</span><span id="amt">0€ von 50 000€</span></div>
+  <div class="meta">
+    <span id="pct">0%</span>
+    <span id="amt">0€ von 50 000€</span>
+  </div>
 
   <div class="row">
-    <label>Ersparnis (€):</label>
-    <input type="number" id="num" step="100" min="0" value="0">
-    <input type="hidden" id="goal" value="50000">
+    <label for="num">Ersparnis (€):</label>
+    <input type="number" id="num" step="100" min="0" value="0" inputmode="numeric">
   </div>
 </div>
 
 <script>
 (function(){
+  const GOAL = 50000; // fixes Sparziel
+  const num  = document.getElementById('num');
   const fill = document.getElementById('fill');
   const pct  = document.getElementById('pct');
   const amt  = document.getElementById('amt');
-  const num  = document.getElementById('num');
-  const goal = document.getElementById('goal');
 
-  const fmt = n => n.toLocaleString('de-DE')+'€';
+  const fmt = n => n.toLocaleString('de-DE') + '€';
   const clamp = (x,min,max)=>Math.max(min,Math.min(max,x));
 
-  function sync(a,g){
-    a = clamp(a,0,g);
-    const p = g>0 ? a/g : 0;
-    fill.style.width = (p*100)+'%';
-    pct.textContent  = (p*100).toFixed(1)+'%';
-    amt.textContent  = `${fmt(a)} von ${fmt(g)}`;
-    // persist: URL + localStorage
-    const hash = `#amount=${a}&goal=${g}`;
-    history.replaceState(null,'',hash);
-    try { localStorage.setItem('van_amount', a); localStorage.setItem('van_goal', g); } catch(e){}
+  function render(amount){
+    const a = clamp(Number(amount||0), 0, GOAL);
+    const p = GOAL ? a/GOAL : 0;
+    fill.style.width = (p*100) + '%';
+    pct.textContent  = (p*100).toFixed(1) + '%';
+    amt.textContent  = `${fmt(a)} von ${fmt(GOAL)}`;
+    try {
+      localStorage.setItem('van_amount', a);
+    } catch(e){}
+    // auch in URL schreiben, damit Notion-Embeds Wert behalten
+    const hash = `#amount=${a}&goal=${GOAL}`;
+    if (location.hash !== hash) history.replaceState(null,'',hash);
   }
 
   // Startwerte: URL-Hash > localStorage > 0
-  const hs  = new URLSearchParams((location.hash||'').slice(1));
-  const g0  = Number(hs.get('goal'))   || Number(localStorage.getItem('van_goal'))   || Number(goal.value) || 50000;
-  const a0  = Number(hs.get('amount')) || Number(localStorage.getItem('van_amount')) || 0;
-  goal.value = g0; num.value = a0; sync(a0,g0);
+  const hs = new URLSearchParams((location.hash||'').slice(1));
+  const a0 = Number(hs.get('amount')) || Number(localStorage.getItem('van_amount')) || 0;
+  num.value = a0;
+  render(a0);
 
-  num.addEventListener('input', ()=> sync(Number(num.value||0), Number(goal.value||g0)));
+  num.addEventListener('input', ()=> render(num.value));
 })();
 </script>
