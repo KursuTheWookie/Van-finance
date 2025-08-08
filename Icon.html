@@ -6,135 +6,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
-    --vanW:560; --vanH:260; --bodyX:60; --bodyY:86; --bodyW:460; --bodyH:118;
-
-    /* Light default */
-    --bg: transparent;         /* << transparent! */
-    --text: #111;
-    --muted: #555;
-    --line: #222;
-    --panel: #dadfe3;
+    --text:#f2f2f2;      /* UI-Text für Dark UIs */
+    --muted:#c8c8c8;
+    --line:#e6e6e6;      /* Linienfarbe Van */
+    --panel:#9aa6ad;     /* Fenster */
+    --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg: transparent;       /* weiterhin transparent */
-      --text: #f2f2f2;
-      --muted: #c8c8c8;
-      --line: #e6e6e6;
-      --panel: #9aa6ad;
-    }
-  }
-  /* Reset / responsive */
-  html,body{height:100%}
   body{
-    margin:0; padding:0; background:var(--bg);
-    font-family:Inter,Arial,sans-serif; text-align:center;
+    margin:0; padding:10px; background:transparent; 
+    font-family:Inter,Arial,sans-serif; text-align:center; color:var(--text);
   }
-  h2{margin:0 0 10px 0; font-weight:600; color:var(--text)}
-  .wrap{position:relative; width:min(var(--vanW)*1px, 100%); margin:0 auto}
-  svg{display:block; margin:0 auto; width:100%; height:auto}
-  .fill{
-    position:absolute; top:var(--bodyY)px; left:calc(var(--bodyX) * 1px);
-    height:var(--bodyH)px; background:#2ecc71; z-index:-1; border-radius:16px;
-    transform-origin:left center;
-  }
-  .row{margin-top:8px}
+  h2{margin:0 0 8px 0; font-weight:600}
+  .wrap{width:560px; max-width:100%; margin:0 auto}
+  svg{display:block; width:100%; height:auto}
   input{
-    padding:.5rem .7rem; font-size:1rem; width:200px; text-align:right;
-    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2);
-    color:var(--text); border-radius:6px; outline:none;
+    margin-top:8px; padding:.5rem .7rem; width:220px; text-align:right;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.2);
+    color:var(--text); border-radius:6px; outline:none; font-size:1rem;
   }
-  .info{margin-top:.35rem; color:var(--muted)}
+  .info{margin-top:6px; color:var(--muted); font-size:.95rem}
 </style>
 </head>
 <body>
-<h2>Savings</h2>
+  <h2>Savings</h2>
+  <div class="wrap">
+    <!-- Pure SVG; fill width controlled by JS via the <rect id="meter"> -->
+    <svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings progress">
+      <defs>
+        <!-- Clip-Bereich: Kasten + Frontkeil (links) -->
+        <clipPath id="vanClip">
+          <!-- Cargo box -->
+          <rect x="80" y="86" width="440" height="118" rx="16" ry="16"/>
+          <!-- Front cab wedge (left) -->
+          <path d="M80,86 L142,86 L165,118 L80,118 Z"/>
+        </clipPath>
+      </defs>
 
-<div class="wrap">
-  <div id="fill" class="fill" style="width:0"></div>
+      <!-- Hintergrund bleibt transparent; Van selbst hat weißes Innenleben -->
+      <!-- Füllbalken: sitzt UNTER den Linien, IN der Vanform -->
+      <g clip-path="url(#vanClip)">
+        <rect x="80" y="86" width="0" height="118" id="meter" fill="#2ecc71" />
+        <!-- weißer Innenkörper für klare sichtbare Silhouette auf dunklem Notion -->
+        <rect x="80" y="86" width="440" height="118" rx="16" ry="16" fill="white" opacity="0.9"/>
+        <path d="M80,86 L142,86 L165,118 L80,118 Z" fill="white" opacity="0.9"/>
+      </g>
 
-  <!-- Crafter-like van, facing LEFT -->
-  <svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <clipPath id="vanClip">
-        <rect x="60" y="86" width="460" height="118" rx="16" ry="16"/>
-        <path d="M520,86 L458,86 L435,118 L520,118 Z"/>
-      </clipPath>
-    </defs>
+      <!-- Linien/Details (Crafter L3H3, nach links ausgerichtet) -->
+      <!-- Dachkante / Hochdach -->
+      <path d="M80,86 h310 l16,-10 h54" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <!-- Cargo-Box-Outline -->
+      <rect x="80" y="86" width="440" height="118" rx="16" ry="16" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <!-- Frontkontur (links) -->
+      <path d="M80,86 L142,86 L165,118 L80,118 Z" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <!-- Windschutzscheibe -->
+      <path d="M134,90 L108,90 L90,114 L152,114" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+      <!-- Trittstufe / Stoßfänger -->
+      <path d="M80,118 L84,130 L80,148" fill="none" stroke="var(--line)" stroke-width="3"/>
 
-    <!-- Outline (no white fills, so dark backgrounds shine through) -->
-    <rect x="60" y="86" width="460" height="118" rx="16" ry="16" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <path d="M60,86 h330 l15,-10 h70" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <path d="M520,86 L458,86 L435,118 L520,118 Z" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <path d="M502,90 L465,90 L447,114 L516,114" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+      <!-- Paneel-/Schiebetür-Andeutungen -->
+      <line x1="110" y1="138" x2="380" y2="138" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
+      <line x1="115" y1="162" x2="360" y2="162" stroke="var(--muted)" stroke-width="1" opacity="0.35"/>
+      <!-- Heck-Türfuge -->
+      <line x1="480" y1="100" x2="480" y2="190" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
 
-    <path d="M520,118 L516,130 L520,148" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <line x1="95" y1="138" x2="380" y2="138" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
-    <line x1="100" y1="162" x2="360" y2="162" stroke="var(--muted)" stroke-width="1" opacity="0.35"/>
-    <line x1="100" y1="100" x2="100" y2="190" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
+      <!-- Räder -->
+      <g>
+        <circle cx="200" cy="204" r="24" fill="var(--line)"/>
+        <circle cx="200" cy="204" r="10" fill="#888"/>
+        <circle cx="420" cy="204" r="24" fill="var(--line)"/>
+        <circle cx="420" cy="204" r="10" fill="#888"/>
+      </g>
 
-    <g>
-      <circle cx="180" cy="204" r="24" fill="var(--line)"/>
-      <circle cx="180" cy="204" r="10" fill="#888"/>
-      <circle cx="420" cy="204" r="24" fill="var(--line)"/>
-      <circle cx="420" cy="204" r="10" fill="#888"/>
-    </g>
+      <!-- Markierung „van paid“ bei 50k/60k -->
+      <line id="paidTick" x1="0" y1="80" x2="0" y2="206" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
+      <text id="paidLabel" x="0" y="76" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
+    </svg>
 
-    <line id="paidTick" x1="0" y1="80" x2="0" y2="206" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
-    <text id="paidLabel" x="0" y="76" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
-  </svg>
-</div>
-
-<div class="row">
-  <input type="number" id="savings" placeholder="Savings (€)" />
-  <div class="info" id="info">0% — 0€ of 60,000€</div>
-</div>
+    <input type="number" id="savings" placeholder="Savings (€)" />
+    <div class="info" id="info">0% — 0€ of 60,000€</div>
+  </div>
 
 <script>
-  const goal = 60000, paidAt = 50000;
-  const bodyX=60, bodyY=86, bodyW=460, bodyH=118;
+  // ---- Config ----
+  const goal   = 60000;  // Gesamtziel
+  const paidAt = 50000;  // Marke "van paid" (optional)
+  const bodyX  = 80, bodyW = 440; // muss mit der SVG-Geometrie matchen
 
-  // theme override via URL ?theme=dark|light
-  (function(){
-    const q=new URLSearchParams(location.search);
-    const t=q.get('theme');
-    if(t==='dark'){
-      document.documentElement.style.setProperty('--text','#f2f2f2');
-      document.documentElement.style.setProperty('--muted','#c8c8c8');
-      document.documentElement.style.setProperty('--line','#e6e6e6');
-      document.documentElement.style.setProperty('--panel','#9aa6ad');
-    } else if(t==='light'){
-      document.documentElement.style.setProperty('--text','#111');
-      document.documentElement.style.setProperty('--muted','#555');
-      document.documentElement.style.setProperty('--line','#222');
-      document.documentElement.style.setProperty('--panel','#dadfe3');
-    }
-  })();
+  const meter = document.getElementById('meter');
+  const info  = document.getElementById('info');
+  const input = document.getElementById('savings');
+  const paidTk= document.getElementById('paidTick');
+  const paidLb= document.getElementById('paidLabel');
 
-  const fill   = document.getElementById('fill');
-  const info   = document.getElementById('info');
-  const input  = document.getElementById('savings');
-  const paidTk = document.getElementById('paidTick');
-  const paidLb = document.getElementById('paidLabel');
+  function colorFor(p){
+    if (p < 0.25) return '#e74c3c';
+    if (p < 0.75) return '#f1c40f';
+    return '#2ecc71';
+  }
 
-  function positionPaidMarker(){
-    const px = bodyX + bodyW * (paidAt / goal);
+  function placePaidMarker(){
+    const px = bodyX + bodyW * (paidAt/goal);
     paidTk.setAttribute('x1', px); paidTk.setAttribute('x2', px);
     paidLb.setAttribute('x', px);
   }
-  positionPaidMarker();
-
-  function colorFor(p){
-    if (p < 0.25) return '#e74c3c';   // red
-    if (p < 0.75) return '#f1c40f';   // yellow
-    return '#2ecc71';                 // green
-  }
+  placePaidMarker();
 
   function update(amount){
-    const p = Math.max(0, Math.min(1, amount / goal));
-    fill.style.width = (bodyW * p) + 'px';
-    fill.style.background = colorFor(p);
-    fill.style.clipPath = `path('M ${bodyX} ${bodyY} h ${bodyW} v ${bodyH} h -${bodyW} Z')`;
+    const p = Math.max(0, Math.min(1, amount/goal));
+    meter.setAttribute('width', bodyW * p);
+    meter.setAttribute('fill', colorFor(p));
     info.textContent = `${(p*100).toFixed(1)}% — ${amount.toLocaleString()}€ of ${goal.toLocaleString()}€`;
     localStorage.setItem('van_savings', amount);
   }
