@@ -1,85 +1,154 @@
 <!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Van Savings V4 LEFT</title>
+<title>Savings</title>
 <style>
-  :root{--sage:#8fa98f; --line:#e6e6e6; --glass:#a7b3bb; --text:#f2f2f2; --muted:#bfc7cc}
-  body{margin:0;padding:10px;background:transparent;color:var(--text);font:15px/1.4 system-ui;text-align:center}
+  :root{
+    --sage:#8fa98f; --line:#e6e6e6; --glass:#a7b3bb;
+    --text:#f2f2f2; --muted:#bfc7cc; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+  }
+  body{margin:0;padding:10px;background:transparent;color:var(--text);font:15px/1.45 system-ui;text-align:center}
   .wrap{max-width:760px;margin:0 auto}
   svg{display:block;width:100%;height:auto}
-  input{margin-top:10px;padding:.55rem .7rem;width:240px;text-align:right;background:rgba(255,255,255,.06);
-        border:1px solid rgba(255,255,255,.2);color:var(--text);border-radius:6px}
-  .info{margin-top:6px;color:var(--muted)}
-  h2{margin:.2rem 0 .6rem;font-weight:700}
+  .info{margin:6px 0 8px;color:var(--muted)}
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  button{
+    background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.25);
+    padding:.45rem .7rem;border-radius:8px;cursor:pointer
+  }
+  button:active{transform:translateY(1px)}
 </style>
 
-<h2>V4 LEFT — Savings</h2>
+<h2>Savings</h2>
 <div class="wrap">
   <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings">
     <defs>
-      <!-- Körper: langer Kasten mit Rundungen -->
-      <rect id="body" x="150" y="90" width="520" height="120" rx="22" ry="22"/>
-      <!-- Kabine/Nase links -->
-      <polygon id="cab" points="150,90 110,108 100,130 100,180 110,202 150,210"/>
-      <!-- Clip: Union aus body + cab -->
-      <clipPath id="clipVan">
-        <use href="#body"/><use href="#cab"/>
-      </clipPath>
+      <!-- Crafter-ähnlicher L3H3-Kasten, links gerichtete Front -->
+      <path id="van" d="
+        M 128 88
+        H 586
+        q 12 0 20 -6
+        l 22 -14
+        h 44
+        q 16 0 26 14
+        l 22 32
+        h 24
+        v 40
+        h -24
+        q -10 0 -16 8
+        l -14 18
+        q -8 10 -22 10
+        h -54
+        q -8 0 -14 6
+        q -16 14 -36 14
+        h -40
+        q -20 0 -34 -16
+        q -4 -4 -10 -4
+        h -260
+        q -6 0 -10 4
+        q -14 16 -34 16
+        h -32
+        q -18 0 -30 -14
+        q -4 -6 -12 -6
+        h -30
+        l -22 -24
+        v -24
+        h 26
+        q 12 0 20 -6
+        q 22 -16 58 -16
+        h 68
+        q 18 0 18 -18
+        v -10
+        q 0 -22 24 -22
+        z"/>
+      <clipPath id="clipVan"><use href="#van"/></clipPath>
     </defs>
 
-    <!-- Füllung: wächst in der Breite; liegt unter Karosserie -->
-    <rect id="meter" x="100" y="86" width="0" height="128" fill="#2ecc71" clip-path="url(#clipVan)"/>
+    <!-- FÜLLUNG (unter der Karosserie) -->
+    <rect id="meter" x="100" y="78" width="0" height="132" clip-path="url(#clipVan)" fill="#2ecc71"/>
 
-    <!-- Karosserie -->
-    <use href="#body" fill="var(--sage)"/><use href="#cab" fill="var(--sage)"/>
-    <use href="#body" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <use href="#cab"  fill="none" stroke="var(--line)" stroke-width="3"/>
+    <!-- KAROSSERIE -->
+    <use href="#van" fill="var(--sage)"/>
+    <use href="#van" fill="none" stroke="var(--line)" stroke-width="3"/>
 
-    <!-- Fenster links -->
-    <polygon points="144,104 118,116 118,164 144,176" fill="var(--glass)" stroke="var(--line)" stroke-width="2"/>
+    <!-- Fenster links (vereinfacht), Frontkeil klar erkennbar -->
+    <path d="M 240 100 h -70 l -24 18 v 36 l 24 16 h 70 z"
+          fill="var(--glass)" stroke="var(--line)" stroke-width="2"/>
+
+    <!-- Heckfuge / Paneellinien (dezent) -->
+    <line x1="520" y1="102" x2="520" y2="192" stroke="var(--line)" stroke-width="1" opacity=".35"/>
+    <line x1="180" y1="140" x2="420" y2="140" stroke="var(--line)" stroke-width="1" opacity=".30"/>
+    <line x1="184" y1="164" x2="410" y2="164" stroke="var(--line)" stroke-width="1" opacity=".24"/>
 
     <!-- Räder -->
     <g>
-      <circle cx="240" cy="210" r="26" fill="var(--line)"/><circle cx="240" cy="210" r="11" fill="#888"/>
-      <circle cx="540" cy="210" r="26" fill="var(--line)"/><circle cx="540" cy="210" r="11" fill="#888"/>
+      <circle cx="260" cy="212" r="26" fill="var(--line)"/><circle cx="260" cy="212" r="11" fill="#888"/>
+      <circle cx="540" cy="212" r="26" fill="var(--line)"/><circle cx="540" cy="212" r="11" fill="#888"/>
     </g>
 
-    <!-- „van paid“ Marke (bei 50k/60k) -->
-    <line id="paidTick" x1="0" y1="86" x2="0" y2="226" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
-    <text id="paidLabel" x="0" y="78" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
+    <!-- Marke „van paid“ (50k/60k) -->
+    <line id="paidTick" x1="0" y1="78" x2="0" y2="210" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
+    <text id="paidLabel" x="0" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
   </svg>
 
-  <input type="number" id="savings" placeholder="Savings (€)"/>
-  <div class="info" id="info">0% — 0€ of 60,000€</div>
+  <div class="info" id="info">…</div>
+  <div class="controls">
+    <button id="minus10">−10 000€</button>
+    <button id="plus10">+10 000€</button>
+    <button id="save">Speichern</button>
+  </div>
 </div>
 
 <script>
-  // --- Konfig ---
-  const goal=60000, paidAt=50000;
-  // Füllgeometrie passend zum Clip: Start bei x=100, maxBreite ≈ 570 (bis hinteres Ende)
-  const fillX=100, fillW=570;
+  // ---- Konfig ----
+  const goal  = 60000;   // Gesamtziel
+  const paidAt= 50000;   // Marke „van paid“
 
-  const meter=document.getElementById('meter');
-  const info =document.getElementById('info');
-  const input=document.getElementById('savings');
-  const paidTk=document.getElementById('paidTick');
-  const paidLb=document.getElementById('paidLabel');
+  // Geometrie der Füllung (passt zum Pfad/Clip):
+  const fillX = 100;     // Startpunkt der Füllung
+  const fillW = 600;     // maximale Breite (Anpassung falls nötig)
 
-  function colorFor(p){ return p<.25?'#e74c3c':p<.75?'#f1c40f':'#2ecc71'; }
-  function placePaid(){
+  // DOM
+  const meter   = document.getElementById('meter');
+  const info    = document.getElementById('info');
+  const paidTk  = document.getElementById('paidTick');
+  const paidLb  = document.getElementById('paidLabel');
+  const minus10 = document.getElementById('minus10');
+  const plus10  = document.getElementById('plus10');
+  const saveBtn = document.getElementById('save');
+
+  // Utils
+  const clamp = (x,min,max)=> Math.max(min, Math.min(max, x));
+  const colorFor = p => p<.25 ? '#e74c3c' : p<.75 ? '#f1c40f' : '#2ecc71';
+
+  function placePaidMarker(){
     const px = fillX + fillW * (paidAt/goal);
-    paidTk.setAttribute('x1',px); paidTk.setAttribute('x2',px);
-    paidLb.setAttribute('x',px);
+    paidTk.setAttribute('x1', px); paidTk.setAttribute('x2', px);
+    paidLb.setAttribute('x', px);
   }
-  function update(amount){
-    const a = isFinite(amount)?Math.max(0,Math.min(amount,goal)):0;
+
+  function render(amount){
+    const a = clamp(amount, 0, goal);
     const p = a/goal;
-    meter.setAttribute('width', fillW*p);
+    meter.setAttribute('x', fillX);
+    meter.setAttribute('width', fillW * p);
     meter.setAttribute('fill', colorFor(p));
-    info.textContent = `${(p*100).toFixed(1)}% — ${a.toLocaleString()}€ of ${goal.toLocaleString()}€`;
-    localStorage.setItem('van_savings', a);
+    info.textContent = `${(p*100).toFixed(1)}% — ${a.toLocaleString('de-DE')}€ von ${goal.toLocaleString('de-DE')}€`;
   }
-  placePaid();
-  const saved=Number(localStorage.getItem('van_savings')||0);
-  input.value=saved||'';
-  update(saved);
-  input.addEventListener('input', e=>update(Number(e.target.value)));
+
+  // Startwert bestimmen: URL-Hash > localStorage > 30%
+  function getStartAmount(){
+    const hash = (location.hash || '').replace('#','').trim();
+    const m = hash.match(/amount=(\d+)/i);
+    if (m) return Number(m[1]);
+    const stored = Number(localStorage.getItem('van_savings')||0);
+    if (stored>0) return stored;
+    return Math.round(goal*0.30); // 30% sichtbar, falls nix da ist
+  }
+
+  let amount = getStartAmount();
+  placePaidMarker();
+  render(amount);
+
+  minus10.onclick = ()=>{ amount = clamp(amount-10000,0,goal); render(amount); };
+  plus10.onclick  = ()=>{ amount = clamp(amount+10000,0,goal); render(amount); };
+  saveBtn.onclick = ()=>{ localStorage.setItem('van_savings', amount); saveBtn.textContent='Gespeichert ✓'; setTimeout(()=>saveBtn.textContent='Speichern',1200); };
 </script>
