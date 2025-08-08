@@ -6,18 +6,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
-    --text:#f2f2f2;      /* UI-Text für Dark UIs */
-    --muted:#c8c8c8;
-    --line:#e6e6e6;      /* Linienfarbe Van */
-    --panel:#9aa6ad;     /* Fenster */
+    /* Farben */
+    --sage:#8FA98F;            /* Van-Karosserie (sage green) */
+    --stroke:#e6e6e6;          /* Linien im Dark-UI */
+    --glass:#9aa6ad;           /* Fenster */
     --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+    --text:#f2f2f2; --muted:#c8c8c8;
+    /* Geometrie der Füllung (muss zum Clip passen) */
+    --fillX:64;   /* Start X der Ladefläche */
+    --fillY:86;   /* Start Y */
+    --fillW:452;  /* Breite der Ladefläche */
+    --fillH:122;  /* Höhe  der Ladefläche */
   }
   body{
-    margin:0; padding:10px; background:transparent; 
-    font-family:Inter,Arial,sans-serif; text-align:center; color:var(--text);
+    margin:0; padding:10px; background:transparent;
+    font-family:Inter,Arial,sans-serif; color:var(--text); text-align:center;
   }
   h2{margin:0 0 8px 0; font-weight:600}
-  .wrap{width:560px; max-width:100%; margin:0 auto}
+  .wrap{width:640px; max-width:100%; margin:0 auto}
   svg{display:block; width:100%; height:auto}
   input{
     margin-top:8px; padding:.5rem .7rem; width:220px; text-align:right;
@@ -29,56 +35,82 @@
 </head>
 <body>
   <h2>Savings</h2>
+
   <div class="wrap">
-    <!-- Pure SVG; fill width controlled by JS via the <rect id="meter"> -->
-    <svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings progress">
+    <!-- Reines SVG: Van + Füllung -->
+    <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Van savings progress">
       <defs>
-        <!-- Clip-Bereich: Kasten + Frontkeil (links) -->
+        <!-- Silhouette des Vans (Crafter-ähnlich, nach links) als Pfad:
+             lange Ladefläche, hohes Dach (H3), keilige Front, Radkästen -->
+        <path id="vanShape" d="
+          M 64 90
+          L 360 90
+          C 372 80, 386 75, 410 75
+          L 486 75
+          C 498 75, 510 82, 517 92
+          L 538 123
+          C 542 129, 548 132, 555 132
+          L 566 132
+          L 566 166
+          L 555 166
+          C 548 166, 542 169, 538 175
+          L 528 190
+          C 524 196, 518 200, 510 200
+          L 470 200
+          C 467 200, 465 201, 463 203
+          C 456 210, 448 216, 440 216
+          L 408 216
+          C 395 216, 386 210, 380 201
+          C 378 198, 376 197, 372 197
+          L 160 197
+          C 156 197, 154 198, 152 201
+          C 145 210, 136 216, 124 216
+          L 96 216
+          C 84 216, 75 211, 68 202
+          C 66 199, 64 198, 60 198
+          L 48 198
+          L 48 170
+          L 60 170
+          C 66 170, 70 169, 74 165
+          C 83 156, 99 150, 120 150
+          L 190 150
+          C 202 150, 210 142, 210 132
+          L 210 120
+          C 210 103, 224 90, 240 90
+          Z" />
+
+        <!-- Clip für die Füllung: innen flächig, ohne Reifen/Frontausbuchtungen -->
         <clipPath id="vanClip">
-          <!-- Cargo box -->
-          <rect x="80" y="86" width="440" height="118" rx="16" ry="16"/>
-          <!-- Front cab wedge (left) -->
-          <path d="M80,86 L142,86 L165,118 L80,118 Z"/>
+          <use href="#vanShape"/>
         </clipPath>
       </defs>
 
-      <!-- Hintergrund bleibt transparent; Van selbst hat weißes Innenleben -->
-      <!-- Füllbalken: sitzt UNTER den Linien, IN der Vanform -->
-      <g clip-path="url(#vanClip)">
-        <rect x="80" y="86" width="0" height="118" id="meter" fill="#2ecc71" />
-        <!-- weißer Innenkörper für klare sichtbare Silhouette auf dunklem Notion -->
-        <rect x="80" y="86" width="440" height="118" rx="16" ry="16" fill="white" opacity="0.9"/>
-        <path d="M80,86 L142,86 L165,118 L80,118 Z" fill="white" opacity="0.9"/>
-      </g>
+      <!-- Füllbalken (wird per JS in der Breite verändert), sitzt unter der Karosserie -->
+      <rect id="meter" x="64" y="86" width="0" height="122" fill="#2ecc71" clip-path="url(#vanClip)"/>
 
-      <!-- Linien/Details (Crafter L3H3, nach links ausgerichtet) -->
-      <!-- Dachkante / Hochdach -->
-      <path d="M80,86 h310 l16,-10 h54" fill="none" stroke="var(--line)" stroke-width="3"/>
-      <!-- Cargo-Box-Outline -->
-      <rect x="80" y="86" width="440" height="118" rx="16" ry="16" fill="none" stroke="var(--line)" stroke-width="3"/>
-      <!-- Frontkontur (links) -->
-      <path d="M80,86 L142,86 L165,118 L80,118 Z" fill="none" stroke="var(--line)" stroke-width="3"/>
-      <!-- Windschutzscheibe -->
-      <path d="M134,90 L108,90 L90,114 L152,114" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-      <!-- Trittstufe / Stoßfänger -->
-      <path d="M80,118 L84,130 L80,148" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <!-- Karosserie (sage green) -->
+      <use href="#vanShape" fill="var(--sage)" />
 
-      <!-- Paneel-/Schiebetür-Andeutungen -->
-      <line x1="110" y1="138" x2="380" y2="138" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
-      <line x1="115" y1="162" x2="360" y2="162" stroke="var(--muted)" stroke-width="1" opacity="0.35"/>
-      <!-- Heck-Türfuge -->
-      <line x1="480" y1="100" x2="480" y2="190" stroke="var(--muted)" stroke-width="1" opacity="0.45"/>
+      <!-- Außenkontur -->
+      <use href="#vanShape" fill="none" stroke="var(--stroke)" stroke-width="3"/>
 
-      <!-- Räder -->
+      <!-- Fenster (vereinfachte Crafter-Form) -->
+      <path d="M 450 90 L 410 90 L 392 108 L 450 108 Z" fill="var(--glass)" stroke="var(--stroke)" stroke-width="2"/>
+
+      <!-- Zier-/Schiebetür-Linien -->
+      <line x1="92" y1="138" x2="350" y2="138" stroke="var(--stroke)" stroke-width="1" opacity="0.35"/>
+      <line x1="96" y1="162" x2="330" y2="162" stroke="var(--stroke)" stroke-width="1" opacity="0.28"/>
+
+      <!-- Radkästen / Räder -->
       <g>
-        <circle cx="200" cy="204" r="24" fill="var(--line)"/>
-        <circle cx="200" cy="204" r="10" fill="#888"/>
-        <circle cx="420" cy="204" r="24" fill="var(--line)"/>
-        <circle cx="420" cy="204" r="10" fill="#888"/>
+        <circle cx="136" cy="216" r="26" fill="var(--stroke)"/>
+        <circle cx="136" cy="216" r="11" fill="#888"/>
+        <circle cx="424" cy="216" r="26" fill="var(--stroke)"/>
+        <circle cx="424" cy="216" r="11" fill="#888"/>
       </g>
 
-      <!-- Markierung „van paid“ bei 50k/60k -->
-      <line id="paidTick" x1="0" y1="80" x2="0" y2="206" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
+      <!-- Marke „van paid“ bei 50k/60k -->
+      <line id="paidTick" x1="0" y1="80" x2="0" y2="226" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="2"/>
       <text id="paidLabel" x="0" y="76" text-anchor="middle" font-size="12" fill="var(--muted)">van paid</text>
     </svg>
 
@@ -88,9 +120,8 @@
 
 <script>
   // ---- Config ----
-  const goal   = 60000;  // Gesamtziel
-  const paidAt = 50000;  // Marke "van paid" (optional)
-  const bodyX  = 80, bodyW = 440; // muss mit der SVG-Geometrie matchen
+  const goal=60000, paidAt=50000;
+  const fillX=64, fillW=452;  // muss zu CSS-Variablen/Rect passen
 
   const meter = document.getElementById('meter');
   const info  = document.getElementById('info');
@@ -103,24 +134,21 @@
     if (p < 0.75) return '#f1c40f';
     return '#2ecc71';
   }
-
   function placePaidMarker(){
-    const px = bodyX + bodyW * (paidAt/goal);
+    const px = fillX + fillW * (paidAt/goal);
     paidTk.setAttribute('x1', px); paidTk.setAttribute('x2', px);
     paidLb.setAttribute('x', px);
   }
-  placePaidMarker();
-
   function update(amount){
     const p = Math.max(0, Math.min(1, amount/goal));
-    meter.setAttribute('width', bodyW * p);
+    meter.setAttribute('width', fillW * p);
     meter.setAttribute('fill', colorFor(p));
     info.textContent = `${(p*100).toFixed(1)}% — ${amount.toLocaleString()}€ of ${goal.toLocaleString()}€`;
     localStorage.setItem('van_savings', amount);
   }
 
+  placePaidMarker();
   input.addEventListener('input', e => update(Number(e.target.value || 0)));
-
   const saved = Number(localStorage.getItem('van_savings') || 0);
   input.value = saved || '';
   update(saved);
